@@ -33,7 +33,7 @@ TEST_CASE("LEXER_TEST_1")
 
 TEST_CASE("LEXER_TEST_2")
 {
-	std::string input{ "let five = 5; let ten = 10; let add = fn(x, y) { x + y; }; let result = add(five, ten);" };
+		std::string input{ "let five = 5; let ten = 10; let add = fn(x, y) { x + y; }; let result = add(five, ten);" };
 	Lexer lex{ input };
 
 	std::vector<Token> expected
