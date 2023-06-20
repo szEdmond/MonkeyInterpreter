@@ -13,6 +13,7 @@ namespace interpreter
 		{
 			_ch = *_position;
 		}
+		Tokenize();
 	}
 
 	void Lexer::readChar()
@@ -46,10 +47,20 @@ namespace interpreter
 		switch (_ch)
 		{
 		case '=':
+			if (peekChar() == '=') {
+				token = { TokenType::EQ, "==" };
+				readChar();
+				break;
+			}
 			token = { TokenType::ASSIGN, _ch };
 			break;
-		case ';':
-			token = { TokenType::SEMICOLON, _ch };
+		case '!':
+			if (peekChar() == '=') {
+				token = { TokenType::NOT_EQ, "!=" };
+				readChar();
+				break;
+			}
+			token = { TokenType::BANG, _ch };
 			break;
 		case '(':
 			token = { TokenType::LPAREN, _ch };
@@ -66,8 +77,26 @@ namespace interpreter
 		case '+':
 			token = { TokenType::PLUS, _ch };
 			break;
+		case '-':
+			token = { TokenType::MINUS, _ch };
+			break;
+		case '/':
+			token = { TokenType::SLASH, _ch };
+			break;
+		case '*':
+			token = { TokenType::ASTERISK, _ch };
+			break;
+		case '<':
+			token = { TokenType::LT, _ch };
+			break;
+		case '>':
+			token = { TokenType::GT, _ch };
+			break;
 		case ',':
 			token = { TokenType::COMMA, _ch };
+			break;
+		case ';':
+			token = { TokenType::SEMICOLON, _ch };
 			break;
 		case 0:
 			token._literal = "";
@@ -114,5 +143,28 @@ namespace interpreter
 		std::string_view identifier{ _position, _readPosition };
 		readChar();
 		return identifier;
+	}
+
+	char Lexer::peekChar()
+	{
+		if (_readPosition+1 >= _input.end())
+		{
+			return 0;
+		}
+		else 
+		{
+			return *_readPosition;
+		}
+	}
+	
+	void Lexer::Tokenize()
+	{
+		Token token{ nextToken() };
+		while (token._type != TokenType::ENDF)
+		{
+			_tokens.push_back(token);
+			token = nextToken();
+		}
+		_tokens.push_back(token);
 	}
 }

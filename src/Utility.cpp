@@ -1,5 +1,4 @@
 #include "Utility.h"
-
 namespace interpreter 
 {
 	namespace utility 
@@ -22,6 +21,15 @@ namespace interpreter
 				return keywordIter->second;
 			}
 			return TokenType::IDENT;
+		}
+
+		std::string stringFromFile(std::string_view fileName)
+		{
+			assert(!fileName.empty());
+			std::ifstream f(fileName.data());
+			std::stringstream buffer;
+			buffer << f.rdbuf();
+			return buffer.str();
 		}
 	}
 }

@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
-#include "Token.h"
 #include <assert.h>
+#include <fstream>
+#include <sstream>
 
+#include "Token.h"
 
 namespace interpreter
 {
@@ -11,6 +13,7 @@ namespace interpreter
 		bool isLetter(char character);
 		bool isDigit(char character);
 		TokenType lookupIdent(std::string_view);
+		std::string stringFromFile(std::string_view fileName);
 	}
 }
 

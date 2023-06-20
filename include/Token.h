@@ -4,6 +4,7 @@
 
 namespace interpreter
 {
+#undef TRUE;
 	enum class TokenType
 	{
 		ILLEGAL,
@@ -16,6 +17,15 @@ namespace interpreter
 		// Operators
 		ASSIGN,
 		PLUS,
+		MINUS,
+		BANG,
+		ASTERISK,
+		SLASH,
+
+		LT,
+		GT,
+		EQ,
+		NOT_EQ,
 
 		// Delimiters
 		COMMA,
@@ -28,7 +38,12 @@ namespace interpreter
 
 		// Keywords
 		FUNCTION,
-		LET
+		LET,
+		TRUE,
+		FALSE,
+		IF,
+		ELSE,
+		RETURN
 	};
 
 	struct Token
@@ -55,6 +70,14 @@ namespace interpreter
 		{TokenType::INT, "INT"},
 		{TokenType::ASSIGN, "="},
 		{TokenType::PLUS, "+"},
+		{TokenType::MINUS, "-"},
+		{TokenType::BANG, "!"},
+		{TokenType::ASTERISK, "*"},
+		{TokenType::SLASH, "/"},
+		{TokenType::LT, "<"},
+		{TokenType::GT, ">"},
+		{TokenType::EQ, "=="},
+		{TokenType::NOT_EQ, "!="},
 		{TokenType::COMMA, ","},
 		{TokenType::SEMICOLON, ";"},
 		{TokenType::LPAREN, "("},
@@ -68,6 +91,11 @@ namespace interpreter
 	static std::unordered_map<std::string, TokenType> sKeyWordsMap
 	{
 		{"fn", TokenType::FUNCTION},
-		{"let", TokenType::LET}
+		{"let", TokenType::LET},
+		{"true", TokenType::TRUE},
+		{"false", TokenType::FALSE},
+		{"if", TokenType::IF},
+		{"else", TokenType::ELSE},
+		{"return", TokenType::RETURN}
 	};
 }
