@@ -4,7 +4,6 @@
 
 namespace interpreter
 {
-#undef TRUE;
 	enum class TokenType
 	{
 		ILLEGAL,
@@ -50,16 +49,16 @@ namespace interpreter
 	{
 		Token() {}
 		Token(TokenType type, std::string byte) :
-			_type(type),
-			_literal(byte)
+			m_type(type),
+			m_literal(byte)
 		{}
 		Token(TokenType type, char byte) :
-			_type(type),
-			_literal(std::string(1, byte))
+			m_type(type),
+			m_literal(std::string(1, byte))
 		{}
 
-		TokenType _type;
-		std::string _literal;
+		TokenType m_type;
+		std::string m_literal;
 	};
 
 	static std::unordered_map<TokenType, std::string> sTokenTypeToStringMap

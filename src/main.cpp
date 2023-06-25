@@ -15,7 +15,7 @@ int main()
     std::vector<Token> tokens = lex2.getTokens();
     for (const auto& token : tokens)
     {
-        std::cout << token._literal << "\n";
+        std::cout << token.m_literal << "\n";
     }
 }
 

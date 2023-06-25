@@ -9,14 +9,13 @@ namespace interpreter
 	public:
 		Lexer(std::string_view);
 		Token nextToken();
-		std::vector<Token> getTokens() { return _tokens; };
+		std::vector<Token> m_tokens;
+		std::vector<Token> getTokens() { return m_tokens; };
 
 	private:
-		std::string _input;
-		std::string::iterator _position;
-		std::string::iterator _readPosition;
-		char _ch;
-		std::vector<Token> _tokens;
+		std::string m_input;
+		std::string::iterator m_position;
+		std::string::iterator m_readPosition;
 
 		void readChar();
 		void skipWhitespace();

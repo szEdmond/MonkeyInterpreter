@@ -1,11 +1,15 @@
 #include "Lexer.h"
+#include "Parser.h"
 #include "utility.h"
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
+#undef TRUE
+#undef FALSE
+
 using namespace interpreter;
 
-TEST_CASE("LEXER_TEST_2")
+TEST_CASE("LexerTest_EveryToken")
 {
 	std::string input{"let five = 5; let ten = 10; let add = fn(x, y) { x + y; }; let result = add(five, ten);" };
 	Lexer lex{ input };
@@ -55,12 +59,12 @@ TEST_CASE("LEXER_TEST_2")
 	for (int i = 0; i < tokens.size(); ++i)
 	{
 		
-		REQUIRE(tokens[i]._literal == expected[i]._literal);
-		REQUIRE(tokens[i]._type == expected[i]._type);
+		REQUIRE(tokens[i].m_literal == expected[i].m_literal);
+		REQUIRE(tokens[i].m_type == expected[i].m_type);
 	}
 }
 
-TEST_CASE("LEXER_TEST_3")
+TEST_CASE("LexerTest_FromFile")
 {
 	std::string input = utility::stringFromFile("../../tests/monkeycode.txt");
 	Lexer lex{ input };
@@ -122,8 +126,7 @@ TEST_CASE("LEXER_TEST_3")
 		{TokenType::GT, ">"},
 		{TokenType::INT, "5"},
 		{TokenType::SEMICOLON, ";"},
-		#undef TRUE
-		#undef FALSE
+
 		{TokenType::IF, "if"},
 		{TokenType::LPAREN, "("},
 		{TokenType::INT, "5"},
@@ -159,8 +162,59 @@ TEST_CASE("LEXER_TEST_3")
 
 	for (int i = 0; i < expected.size(); ++i)
 	{
-		REQUIRE(expected[i]._literal == tokens[i]._literal);
-		REQUIRE(expected[i]._type == tokens[i]._type);
+		REQUIRE(expected[i].m_literal == tokens[i].m_literal);
+		REQUIRE(expected[i].m_type == tokens[i].m_type);
+	}
+}
+
+TEST_CASE("ParserTest_LET")
+{
+	std::string input = "let x = 5; let y = 10; let foobar = 838383;";
+	std::unique_ptr<Lexer> lexer { std::make_unique<Lexer>(input) };
+	Parser parser(std::move(lexer));
+	auto program = parser.parseProgram();
+
+	if (program == nullptr)
+	{
+		FAIL("ParseProgram NULL");
+	}
+
+	if (program->statements.size() != 3)
+	{
+		FAIL("Program.m_statements does not contain 3 statements");
+	}
+
+	std::vector<std::string> expectedIdentifiers { "x", "y", "foobar" };
+
+	for (int i = 0; i < program->statements.size(); ++i)
+	{
+		LetStatement* letStatement{ dynamic_cast<LetStatement*>(program->statements[i].get()) };
+		REQUIRE(letStatement->token.m_type == TokenType::LET);
+		REQUIRE(letStatement->identifier.m_literal == expectedIdentifiers[i]);
+	}
+}
+
+TEST_CASE("ParserTest_RETURN")
+{
+	std::string input = "return 5; return 44; return 808080;";
+	std::unique_ptr<Lexer> lexer { std::make_unique<Lexer>(input) };
+	Parser parser(std::move(lexer));
+	auto program = parser.parseProgram();
+
+	if (program == nullptr)
+	{
+		FAIL("ParseProgram NULL");
+	}
+
+	if (program->statements.size() != 3)
+	{
+		FAIL("Program.m_statements does not contain 3 statements");
+	}
+
+	for (int i = 0; i < program->statements.size(); ++i)
+	{
+		ReturnStatement* returnStatement{ dynamic_cast<ReturnStatement*>(program->statements[i].get()) };
+		REQUIRE(returnStatement->token.m_literal == "return");
 	}
 }
 

@@ -4,35 +4,28 @@
 namespace interpreter
 {
 	Lexer::Lexer(std::string_view input) :
-		_input(input),
-		_position(_input.begin()),
-		_readPosition(_position + 1)
+		m_input(input),
+		m_position(m_input.begin()),
+		m_readPosition(m_position + 1)
 	{
 		assert(!input.empty());
-		if (_position != _input.end())
-		{
-			_ch = *_position;
-		}
 		Tokenize();
 	}
 
 	void Lexer::readChar()
 	{
-		if (_readPosition == _input.end())
+		if (m_readPosition == m_input.end())
 		{
-			_ch = 0;
+			*m_position = 0;
 			return;
 		}
-
-		_ch = *_readPosition;
-
-		_position = _readPosition;
-		++_readPosition;
+		m_position = m_readPosition;
+		++m_readPosition;
 	}
 
 	void Lexer::skipWhitespace()
 	{
-		while (_ch == ' ' || _ch == '\t' || _ch == '\n' || _ch == '\r')
+		while (*m_position == ' ' || *m_position == '\t' || *m_position == '\n' || *m_position == '\r')
 		{
 			readChar();
 		}
@@ -44,7 +37,7 @@ namespace interpreter
 
 		skipWhitespace();
 
-		switch (_ch)
+		switch (*m_position)
 		{
 		case '=':
 			if (peekChar() == '=') {
@@ -52,7 +45,7 @@ namespace interpreter
 				readChar();
 				break;
 			}
-			token = { TokenType::ASSIGN, _ch };
+			token = { TokenType::ASSIGN, *m_position };
 			break;
 		case '!':
 			if (peekChar() == '=') {
@@ -60,62 +53,62 @@ namespace interpreter
 				readChar();
 				break;
 			}
-			token = { TokenType::BANG, _ch };
+			token = { TokenType::BANG, *m_position };
 			break;
 		case '(':
-			token = { TokenType::LPAREN, _ch };
+			token = { TokenType::LPAREN, *m_position };
 			break;
 		case ')':
-			token = { TokenType::RPAREN, _ch };
+			token = { TokenType::RPAREN, *m_position };
 			break;
 		case '{':
-			token = { TokenType::LBRACE, _ch };
+			token = { TokenType::LBRACE, *m_position };
 			break;
 		case '}':
-			token = { TokenType::RBRACE, _ch };
+			token = { TokenType::RBRACE, *m_position };
 			break;
 		case '+':
-			token = { TokenType::PLUS, _ch };
+			token = { TokenType::PLUS, *m_position };
 			break;
 		case '-':
-			token = { TokenType::MINUS, _ch };
+			token = { TokenType::MINUS, *m_position };
 			break;
 		case '/':
-			token = { TokenType::SLASH, _ch };
+			token = { TokenType::SLASH, *m_position };
 			break;
 		case '*':
-			token = { TokenType::ASTERISK, _ch };
+			token = { TokenType::ASTERISK, *m_position };
 			break;
 		case '<':
-			token = { TokenType::LT, _ch };
+			token = { TokenType::LT, *m_position };
 			break;
 		case '>':
-			token = { TokenType::GT, _ch };
+			token = { TokenType::GT, *m_position };
 			break;
 		case ',':
-			token = { TokenType::COMMA, _ch };
+			token = { TokenType::COMMA, *m_position };
 			break;
 		case ';':
-			token = { TokenType::SEMICOLON, _ch };
+			token = { TokenType::SEMICOLON, *m_position };
 			break;
 		case 0:
-			token._literal = "";
-			token._type = TokenType::ENDF;
+			token.m_literal = "";
+			token.m_type = TokenType::ENDF;
 			break;
 		default:
-			if (utility::isLetter(_ch))
+			if (utility::isLetter(*m_position))
 			{
 				std::string_view identifier{ readIdentifier() };
 				token = { utility::lookupIdent(identifier), std::string(identifier) };
 				return token;
 			}
-			else if (utility::isDigit(_ch))
+			else if (utility::isDigit(*m_position))
 			{
 				token = { TokenType::INT, std::string(readNumber()) };
 				return token;
 			}
 			else {
-				token = { TokenType::ILLEGAL, _ch };
+				token = { TokenType::ILLEGAL, *m_position };
 			}
 		}
 		readChar();
@@ -125,46 +118,46 @@ namespace interpreter
 
 	std::string_view Lexer::readNumber()
 	{
-		for (; _readPosition != _input.end() && utility::isDigit(*_readPosition); _readPosition++)
+		for (; m_readPosition != m_input.end() && utility::isDigit(*m_readPosition); m_readPosition++)
 		{
 		}
 
-		std::string_view result{ _position, _readPosition };
+		std::string_view result{ m_position, m_readPosition };
 		readChar();
 		return result;
 	}
 
 	std::string_view Lexer::readIdentifier()
 	{
-		for (; _readPosition != _input.end() && utility::isLetter(*_readPosition); _readPosition++)
+		for (; m_readPosition != m_input.end() && utility::isLetter(*m_readPosition); m_readPosition++)
 		{
 		}
 
-		std::string_view identifier{ _position, _readPosition };
+		std::string_view identifier{ m_position, m_readPosition };
 		readChar();
 		return identifier;
 	}
 
 	char Lexer::peekChar()
 	{
-		if (_readPosition+1 >= _input.end())
+		if (m_readPosition+1 >= m_input.end())
 		{
 			return 0;
 		}
 		else 
 		{
-			return *_readPosition;
+			return *m_readPosition;
 		}
 	}
 	
 	void Lexer::Tokenize()
 	{
 		Token token{ nextToken() };
-		while (token._type != TokenType::ENDF)
+		while (token.m_type != TokenType::ENDF)
 		{
-			_tokens.push_back(token);
+			m_tokens.push_back(token);
 			token = nextToken();
 		}
-		_tokens.push_back(token);
+		m_tokens.push_back(token);
 	}
 }
