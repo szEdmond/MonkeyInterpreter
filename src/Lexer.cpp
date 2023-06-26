@@ -9,6 +9,11 @@ namespace interpreter
 		m_readPosition(m_position + 1)
 	{
 		assert(!input.empty());
+
+		if(m_position != m_input.end())
+		{
+			m_char = *m_position;
+		}
 		Tokenize();
 	}
 
@@ -16,16 +21,17 @@ namespace interpreter
 	{
 		if (m_readPosition == m_input.end())
 		{
-			*m_position = 0;
+			m_char = 0;
 			return;
 		}
 		m_position = m_readPosition;
 		++m_readPosition;
+		m_char = *m_position;
 	}
 
 	void Lexer::skipWhitespace()
 	{
-		while (*m_position == ' ' || *m_position == '\t' || *m_position == '\n' || *m_position == '\r')
+		while (m_char == ' ' || m_char == '\t' || m_char == '\n' || m_char == '\r')
 		{
 			readChar();
 		}
@@ -37,7 +43,7 @@ namespace interpreter
 
 		skipWhitespace();
 
-		switch (*m_position)
+		switch (m_char)
 		{
 		case '=':
 			if (peekChar() == '=') {
@@ -45,7 +51,7 @@ namespace interpreter
 				readChar();
 				break;
 			}
-			token = { TokenType::ASSIGN, *m_position };
+			token = { TokenType::ASSIGN, m_char };
 			break;
 		case '!':
 			if (peekChar() == '=') {
@@ -53,62 +59,62 @@ namespace interpreter
 				readChar();
 				break;
 			}
-			token = { TokenType::BANG, *m_position };
+			token = { TokenType::BANG, m_char };
 			break;
 		case '(':
-			token = { TokenType::LPAREN, *m_position };
+			token = { TokenType::LPAREN, m_char };
 			break;
 		case ')':
-			token = { TokenType::RPAREN, *m_position };
+			token = { TokenType::RPAREN, m_char };
 			break;
 		case '{':
-			token = { TokenType::LBRACE, *m_position };
+			token = { TokenType::LBRACE, m_char };
 			break;
 		case '}':
-			token = { TokenType::RBRACE, *m_position };
+			token = { TokenType::RBRACE, m_char };
 			break;
 		case '+':
-			token = { TokenType::PLUS, *m_position };
+			token = { TokenType::PLUS, m_char };
 			break;
 		case '-':
-			token = { TokenType::MINUS, *m_position };
+			token = { TokenType::MINUS, m_char };
 			break;
 		case '/':
-			token = { TokenType::SLASH, *m_position };
+			token = { TokenType::SLASH, m_char };
 			break;
 		case '*':
-			token = { TokenType::ASTERISK, *m_position };
+			token = { TokenType::ASTERISK, m_char };
 			break;
 		case '<':
-			token = { TokenType::LT, *m_position };
+			token = { TokenType::LT, m_char };
 			break;
 		case '>':
-			token = { TokenType::GT, *m_position };
+			token = { TokenType::GT, m_char };
 			break;
 		case ',':
-			token = { TokenType::COMMA, *m_position };
+			token = { TokenType::COMMA, m_char };
 			break;
 		case ';':
-			token = { TokenType::SEMICOLON, *m_position };
+			token = { TokenType::SEMICOLON, m_char };
 			break;
 		case 0:
 			token.m_literal = "";
 			token.m_type = TokenType::ENDF;
 			break;
 		default:
-			if (utility::isLetter(*m_position))
+			if (utility::isLetter(m_char))
 			{
-				std::string_view identifier{ readIdentifier() };
+				std::string identifier{ readIdentifier() };
 				token = { utility::lookupIdent(identifier), std::string(identifier) };
 				return token;
 			}
-			else if (utility::isDigit(*m_position))
+			else if (utility::isDigit(m_char))
 			{
 				token = { TokenType::INT, std::string(readNumber()) };
 				return token;
 			}
 			else {
-				token = { TokenType::ILLEGAL, *m_position };
+				token = { TokenType::ILLEGAL, m_char };
 			}
 		}
 		readChar();
@@ -140,7 +146,7 @@ namespace interpreter
 
 	char Lexer::peekChar()
 	{
-		if (m_readPosition+1 >= m_input.end())
+		if (m_readPosition >= m_input.end())
 		{
 			return 0;
 		}

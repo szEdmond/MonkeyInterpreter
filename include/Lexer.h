@@ -16,6 +16,7 @@ namespace interpreter
 		std::string m_input;
 		std::string::iterator m_position;
 		std::string::iterator m_readPosition;
+		char m_char;
 
 		void readChar();
 		void skipWhitespace();

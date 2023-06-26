@@ -167,33 +167,35 @@ TEST_CASE("LexerTest_FromFile")
 	}
 }
 
-TEST_CASE("ParserTest_LET")
+
+TEST_CASE("PARSERTEST_LET")
 {
 	std::string input = "let x = 5; let y = 10; let foobar = 838383;";
 	std::unique_ptr<Lexer> lexer { std::make_unique<Lexer>(input) };
 	Parser parser(std::move(lexer));
-	auto program = parser.parseProgram();
+	auto program = std::move(parser.parseProgram());
 
 	if (program == nullptr)
 	{
-		FAIL("ParseProgram NULL");
+		FAIL("parseProgram NULL");
 	}
 
-	if (program->statements.size() != 3)
-	{
-		FAIL("Program.m_statements does not contain 3 statements");
-	}
+    if (program->statements.size() != 3)
+    {
+        FAIL("Program.m_statements does not contain 3 statements");
+    }
 
-	std::vector<std::string> expectedIdentifiers { "x", "y", "foobar" };
+    std::vector<std::string> expectedIdentifiers{ "x", "y", "foobar" };
 
-	for (int i = 0; i < program->statements.size(); ++i)
+	for (int i = 0; i < expectedIdentifiers.size(); ++i)
 	{
 		LetStatement* letStatement{ dynamic_cast<LetStatement*>(program->statements[i].get()) };
-		REQUIRE(letStatement->token.m_type == TokenType::LET);
-		REQUIRE(letStatement->identifier.m_literal == expectedIdentifiers[i]);
+		REQUIRE(letStatement->tokenLiteral() == "let");
+		REQUIRE(letStatement->name->identifierValue == expectedIdentifiers[i]);
+		REQUIRE(letStatement->name->tokenLiteral() == expectedIdentifiers[i]);
 	}
 }
-
+//
 TEST_CASE("ParserTest_RETURN")
 {
 	std::string input = "return 5; return 44; return 808080;";
@@ -214,8 +216,30 @@ TEST_CASE("ParserTest_RETURN")
 	for (int i = 0; i < program->statements.size(); ++i)
 	{
 		ReturnStatement* returnStatement{ dynamic_cast<ReturnStatement*>(program->statements[i].get()) };
-		REQUIRE(returnStatement->token.m_literal == "return");
+		REQUIRE(returnStatement->tokenLiteral() == "return");
 	}
 }
 
+TEST_CASE("ParserTest_IDENTIFIER")
+{
+	std::string input = "foobar";
+	std::unique_ptr<Lexer> lexer { std::make_unique<Lexer>(input) };
+	Parser parser(std::move(lexer));
+	auto program = parser.parseProgram();
 
+	if (program == nullptr)
+	{
+		FAIL("ParseProgram NULL");
+	}
+
+	if (program->statements.size() != 1)
+	{
+		FAIL("Program.m_statements does not contain enough statements");
+	}
+
+    for (int i = 0; i < program->statements.size(); ++i)
+	{
+		ExpressionStatement* expressionStatement{ dynamic_cast<ExpressionStatement*>(program->statements[i].get()) };
+		REQUIRE( expressionStatement->expression->tokenLiteral() == "foobar");
+	}
+}
