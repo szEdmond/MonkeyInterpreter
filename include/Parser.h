@@ -35,14 +35,7 @@ private:
     std::unique_ptr<Statement> parseStatement();
     std::unique_ptr<Expression> parseExpression(int precedence);
 
-    std::unique_ptr<Expression> parseIdentifier() {
-        auto exp = std::make_unique<Identifier>();
-        exp->identifierToken = *m_currentToken;
-        exp->identifierValue = (*m_currentToken).m_literal;
-        
-        return exp;
-    }
-
+    std::unique_ptr<Expression> parseIdentifier();
 };
 
 

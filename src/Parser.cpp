@@ -56,7 +56,7 @@ std::unique_ptr<LetStatement> Parser::parseLetStatement() {
     auto statement = std::make_unique<LetStatement>();
     statement->token = *m_currentToken;
 
-    if ((*m_nextToken).m_type != TokenType::IDENT)
+    if (m_nextToken->m_type != TokenType::IDENT)
     {
         return nullptr;
     }
@@ -69,12 +69,12 @@ std::unique_ptr<LetStatement> Parser::parseLetStatement() {
     //statement->name->identifierValue = t.m_literal;
 
 
-    if ((*m_nextToken).m_type != TokenType::ASSIGN)
+    if (m_nextToken->m_type != TokenType::ASSIGN)
     {
         return nullptr;
     }
 
-    while ((*m_currentToken).m_type != TokenType::SEMICOLON)
+    while (m_currentToken->m_type != TokenType::SEMICOLON)
     {
         advanceToken();
     }
@@ -88,7 +88,7 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
     statement->token = *m_currentToken;
 
     advanceToken();
-    while ((*m_currentToken).m_type != TokenType::SEMICOLON)
+    while (m_currentToken->m_type != TokenType::SEMICOLON)
     {
         advanceToken();
     }
@@ -97,7 +97,7 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
 
 std::unique_ptr<Expression> Parser::parseExpression(int precedence)
 {
-    prefixParseFnPtr prefix = m_prefixParseFns[(*m_currentToken).m_type]; // get types corresponding prefixParseFunction
+    prefixParseFnPtr prefix = m_prefixParseFns[m_currentToken->m_type]; // get types corresponding prefixParseFunction
     if (prefix == nullptr)
         return nullptr;
 
@@ -110,9 +110,18 @@ std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
     auto statement = std::make_unique<ExpressionStatement>();
     statement->expression = parseExpression(Precedence::LOWEST);
 
-    if ((*m_nextToken).m_type == TokenType::SEMICOLON) {
+    if (m_nextToken->m_type == TokenType::SEMICOLON) {
         advanceToken();
     }
 
     return statement;
 }
+
+std::unique_ptr<Expression> Parser::parseIdentifier() {
+    auto exp = std::make_unique<Identifier>();
+    exp->identifierToken = *m_currentToken;
+    exp->identifierValue = (*m_currentToken).m_literal;
+
+    return exp;
+}
+
