@@ -1,7 +1,8 @@
 #pragma once
-#include "Token.h"
 #include <string_view>
 #include <iostream>
+
+#include "Token.h"
 
 namespace interpreter
 {

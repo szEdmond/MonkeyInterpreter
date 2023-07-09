@@ -10,6 +10,29 @@ typedef std::function<std::unique_ptr<Expression>(std::unique_ptr<Expression>)> 
 
 using namespace interpreter;
 
+enum Precedence : int{
+    _ = 0,
+    LOWEST = 1,
+    EQUALS = 2,
+    LESSGREATER = 3,
+    SUM = 4,
+    PRODUCT = 5,
+    PREFIX = 6,
+    CALL = 7
+};
+
+static const std::unordered_map<TokenType, Precedence> precedences{
+    {TokenType::EQ, EQUALS},
+    {TokenType::NOT_EQ, EQUALS},
+    {TokenType::LT, LESSGREATER},
+    {TokenType::GT, LESSGREATER},
+    {TokenType::PLUS, SUM},
+    {TokenType::MINUS, SUM},
+    {TokenType::SLASH, PRODUCT},
+    {TokenType::ASTERISK, PRODUCT}
+};
+
+
 class Parser
 {
 private:
@@ -25,17 +48,24 @@ public:
     Parser(std::unique_ptr<Lexer> _lexer);
     std::unique_ptr<Program> parseProgram();
 
-
 private:
     std::unique_ptr<LetStatement> parseLetStatement();
     std::unique_ptr<ReturnStatement> parseReturnStatement();
     std::unique_ptr<ExpressionStatement> parseExpressionStatement();
+    std::unique_ptr<Expression> parseIntegerLiteral();
+    std::unique_ptr<Expression> parsePrefixExpression();
+    std::unique_ptr<Expression> parseInfixExpression(std::unique_ptr<Expression> left);
 
     void advanceToken();
+
+    int peekPrecedence();
+    int currPrecedence();
+
     std::unique_ptr<Statement> parseStatement();
     std::unique_ptr<Expression> parseExpression(int precedence);
 
     std::unique_ptr<Expression> parseIdentifier();
+
 };
 
 

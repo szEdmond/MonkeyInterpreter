@@ -243,3 +243,142 @@ TEST_CASE("ParserTest_IDENTIFIER")
 		REQUIRE( expressionStatement->expression->tokenLiteral() == "foobar");
 	}
 }
+
+TEST_CASE("ParserTest_INTLITERAL")
+{
+	std::string input = "5";
+	std::unique_ptr<Lexer> lexer { std::make_unique<Lexer>(input) };
+	Parser parser(std::move(lexer));
+	auto program = parser.parseProgram();
+
+	if (program == nullptr)
+	{
+		FAIL("ParseProgram NULL");
+	}
+
+	if (program->statements.size() != 1)
+	{
+		FAIL("Program.m_statements does not contain enough statements");
+	}
+
+    for (int i = 0; i < program->statements.size(); ++i)
+	{
+		ExpressionStatement* expressionStatement{ dynamic_cast<ExpressionStatement*>(program->statements[i].get()) };
+		IntegerLiteral* expression{ dynamic_cast<IntegerLiteral*>(expressionStatement->expression.get()) };
+		REQUIRE(expression->value == 5);
+	}
+}
+
+TEST_CASE("ParserTest_PrefixExpressions")
+{
+	struct tests {
+		std::string input;
+		std::string op;
+		int intVal;
+	};
+
+	tests test1[] = { {"!5;", "!", 5}, { "-15", "-", 15 } };
+
+	//std::string input = "!5; ! 5";
+	for (auto test : test1) {
+		std::unique_ptr<Lexer> lexer{ std::make_unique<Lexer>(test.input) };
+		Parser parser(std::move(lexer));
+		auto program = parser.parseProgram();
+
+		if (program == nullptr)
+		{
+			FAIL("ParseProgram NULL");
+		}
+
+		if (program->statements.size() != 1)
+		{
+			FAIL("Program.m_statements does not contain enough statements");
+		}
+
+		for (int i = 0; i < program->statements.size(); ++i)
+		{
+			ExpressionStatement* expressionStatement{ dynamic_cast<ExpressionStatement*>(program->statements[i].get()) };
+			PrefixExpression* expression{ dynamic_cast<PrefixExpression*>(expressionStatement->expression.get()) };
+			REQUIRE(expression->op == test.op);
+
+			IntegerLiteral* intLit{ dynamic_cast<IntegerLiteral*>(expression->right.get()) };
+			REQUIRE(intLit->value == test.intVal);
+		}
+	}
+}
+
+TEST_CASE("ParserTest_InfixExpressions")
+{
+	struct tests {
+		std::string input;
+		int leftVal;
+		std::string op;
+		int rightVal;
+	};
+
+	tests test1[] = {
+		{"5 + 5;", 5, "+", 5},
+		{"5 - 5;", 5, "-", 5},
+		{"5 * 5;", 5, "*", 5},
+		{"5 / 5;", 5, "/", 5},
+		{"5 > 5;", 5, ">", 5},
+		{"5 < 5;", 5, "<", 5},
+		{"5 == 5;", 5, "==", 5},
+		{"5 != 5;", 5, "!=", 5},
+	};
+
+	//std::string input = "!5; ! 5";
+	for (auto test : test1) {
+		std::unique_ptr<Lexer> lexer{ std::make_unique<Lexer>(test.input) };
+		Parser parser(std::move(lexer));
+		auto program = parser.parseProgram();
+
+		REQUIRE(program);
+		REQUIRE(program->statements.size() == 1);
+
+		for (int i = 0; i < program->statements.size(); ++i)
+		{
+			ExpressionStatement* expressionStatement{ dynamic_cast<ExpressionStatement*>(program->statements[i].get()) };
+			InfixExpression* expression{ dynamic_cast<InfixExpression*>(expressionStatement->expression.get()) };
+
+			IntegerLiteral* intLitLeft{ dynamic_cast<IntegerLiteral*>(expression->left.get()) };
+			REQUIRE(intLitLeft->value == test.leftVal);
+
+			REQUIRE(expression->op == test.op);
+
+			IntegerLiteral* intLitRight{ dynamic_cast<IntegerLiteral*>(expression->left.get()) };
+			REQUIRE(intLitRight->value == test.rightVal);
+		}
+	}
+}
+
+TEST_CASE("ParserTest_OperatorPrecedenceParsing")
+{
+	struct tests {
+		std::string input;
+		std::string expected;
+	};
+	tests testdata[]{
+		{"-a * b", "((-a)*b);"},
+		{"!-a", "(!(-a));"},
+		{"a+b+c", "((a+b)+c);"},
+		{"a + b - c", "((a+b)-c);"},
+		{"a * b * c", "((a*b)*c);"},
+		{"a * b / c", "((a*b)/c);"},
+		{"a + b / c", "(a+(b/c));"},
+		{"a + b * c + d / e - f", "(((a+(b*c))+(d/e))-f);"},
+		{"5 > 4 == 3 < 4", "((5>4)==(3<4));"},
+		{"5 < 4 != 3 > 4", "((5<4)!=(3>4));"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3+(4*5))==((3*1)+(4*5)));"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3+(4*5))==((3*1)+(4*5)));"}
+	};
+
+    for (auto test : testdata) {
+		std::unique_ptr<Lexer> lexer{ std::make_unique<Lexer>(test.input) };
+		Parser parser(std::move(lexer));
+		auto program = parser.parseProgram();
+		REQUIRE(program);
+		REQUIRE(program->String() == test.expected);
+		
+	}
+}

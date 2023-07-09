@@ -2,8 +2,8 @@
 #include "Utility.h"
 #include "string"
 
-
 using namespace interpreter;
+
 int main()
 {
     std::string in;
@@ -18,5 +18,3 @@ int main()
         std::cout << token.m_literal << "\n";
     }
 }
-
-
